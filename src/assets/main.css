@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --spotify-black: #121212;
+    --spotify-dark-gray: #181818;
+    --spotify-light-gray: #282828;
+    --spotify-gray-text: #b3b3b3;
+    --spotify-green: #1ed760;
+    --spotify-green-hover: #1fdf64;
+  }
+
+  body {
+    background-color: var(--spotify-black);
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    overflow: hidden;
+    user-select: none;
+  }
+}
+
+/* Custom Scrollbars for Spotify UI Look */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  border: 3px solid var(--spotify-black);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
