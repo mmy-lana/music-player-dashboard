@@ -1,30 +1,32 @@
-import { ref, watch, onUnmounted } from 'vue';
+import { watch } from 'vue';
 import { useAudioStore } from '@/stores/audioStore';
 import { usePlaylistStore } from '@/stores/playlistStore';
 import type { Track } from '@/types';
 
+// Module-level singleton instance shared across all composable calls
+let audioElement: HTMLAudioElement | null = null;
+
 export function useAudioPlayer() {
   const audioStore = useAudioStore();
   const playlistStore = usePlaylistStore();
-  const audioElement = ref<HTMLAudioElement | null>(null);
 
   function initAudio() {
-    if (!audioElement.value) {
-      audioElement.value = new Audio();
+    if (!audioElement) {
+      audioElement = new Audio();
       
-      audioElement.value.addEventListener('timeupdate', () => {
-        if (audioElement.value) {
-          audioStore.currentTime = audioElement.value.currentTime;
+      audioElement.addEventListener('timeupdate', () => {
+        if (audioElement) {
+          audioStore.currentTime = audioElement.currentTime;
         }
       });
 
-      audioElement.value.addEventListener('loadedmetadata', () => {
-        if (audioElement.value) {
-          audioStore.duration = audioElement.value.duration || audioStore.currentTrack?.duration || 0;
+      audioElement.addEventListener('loadedmetadata', () => {
+        if (audioElement) {
+          audioStore.duration = audioElement.duration || audioStore.currentTrack?.duration || 0;
         }
       });
 
-      audioElement.value.addEventListener('ended', handleTrackEnded);
+      audioElement.addEventListener('ended', handleTrackEnded);
     }
   }
 
@@ -32,14 +34,14 @@ export function useAudioPlayer() {
     initAudio();
     if (audioStore.currentTrack?.id !== track.id) {
       audioStore.setTrack(track);
-      if (audioElement.value) {
-        audioElement.value.src = track.audioUrl;
-        audioElement.value.load();
+      if (audioElement) {
+        audioElement.src = track.audioUrl;
+        audioElement.load();
       }
     }
     
-    if (audioElement.value) {
-      audioElement.value.play().then(() => {
+    if (audioElement) {
+      audioElement.play().then(() => {
         audioStore.setPlaying(true);
       }).catch((err) => {
         console.warn('Audio playback prevented:', err);
@@ -54,21 +56,21 @@ export function useAudioPlayer() {
       return;
     }
 
-    if (!audioElement.value) initAudio();
+    if (!audioElement) initAudio();
 
     if (audioStore.isPlaying) {
-      audioElement.value?.pause();
+      audioElement?.pause();
       audioStore.setPlaying(false);
     } else {
-      audioElement.value?.play().then(() => {
+      audioElement?.play().then(() => {
         audioStore.setPlaying(true);
       }).catch(console.warn);
     }
   }
 
   function seek(timeInSeconds: number) {
-    if (audioElement.value) {
-      audioElement.value.currentTime = timeInSeconds;
+    if (audioElement) {
+      audioElement.currentTime = timeInSeconds;
       audioStore.currentTime = timeInSeconds;
     }
   }
@@ -103,30 +105,23 @@ export function useAudioPlayer() {
   }
 
   function handleTrackEnded() {
-    if (audioStore.repeatMode === 'one' && audioElement.value) {
-      audioElement.value.currentTime = 0;
-      audioElement.value.play();
+    if (audioStore.repeatMode === 'one' && audioElement) {
+      audioElement.currentTime = 0;
+      audioElement.play();
     } else {
       playNext();
     }
   }
 
   watch(() => audioStore.volume, (newVol) => {
-    if (audioElement.value) {
-      audioElement.value.volume = audioStore.isMuted ? 0 : newVol / 100;
+    if (audioElement) {
+      audioElement.volume = audioStore.isMuted ? 0 : newVol / 100;
     }
   });
 
   watch(() => audioStore.isMuted, (muted) => {
-    if (audioElement.value) {
-      audioElement.value.volume = muted ? 0 : audioStore.volume / 100;
-    }
-  });
-
-  onUnmounted(() => {
-    if (audioElement.value) {
-      audioElement.value.pause();
-      audioElement.value.removeEventListener('ended', handleTrackEnded);
+    if (audioElement) {
+      audioElement.volume = muted ? 0 : audioStore.volume / 100;
     }
   });
 
