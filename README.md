@@ -31,7 +31,7 @@ A modern, responsive Music Player Web Dashboard built with **Vue 3**, **Tailwind
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/music-player-dashboard.git
+git clone https://github.com/mmy-lana/music-player-dashboard.git
 cd music-player-dashboard
 
 # Install dependencies
